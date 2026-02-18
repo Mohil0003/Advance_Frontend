@@ -1,7 +1,7 @@
-# useFormStatus (custom hook guide)
+# useFormStatus (react-dom hook guide)
 
 ## What is it?
-`useFormStatus` is a pattern for a custom hook that manages common form UI states: `touched`, `dirty`, `isSubmitting`, `errors`, and `isValid`. It's not a built-in React hook — this doc shows a simple API and examples.
+`useFormStatus` is a built-in React hook from `react-dom` (React 19+) that provides form submission state. It returns information about the last form submission, including `pending` (submission in progress) and `action` (which form action is being processed). This hook is useful for disabling submit buttons and showing loading states during form submission.
 
 ## Why you need it
 - Centralize form status logic and reduce boilerplate across forms.  
@@ -9,51 +9,114 @@
 
 ## Suggested API (example)
 ```js
-const { status, setTouched, setErrors, validate, submit } = useFormStatus({ initialValues, validateFn });
+import { useFormStatus } from 'react-dom';
+
+const { pending, action } = useFormStatus();
 ```
-`status` could include: `{ touched, dirty, isSubmitting, errors, isValid }`.
+`pending` (boolean): Indicates if the form action is currently submitting.  
+`action` (FormAction): The form action being processed.
 
-## Basic implementation sketch
+## Basic usage with Server Actions
 ```js
-function useFormStatus({ initialValues = {}, validateFn } = {}) {
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+import { useFormStatus } from 'react-dom';
 
-  const validate = useCallback((values) => {
-    const e = validateFn ? validateFn(values) : {};
-    setErrors(e);
-    return e;
-  }, [validateFn]);
+async function submitForm(formData) {
+  // Server action - validates and processes data
+  const email = formData.get('email');
+  const password = formData.get('password');
+  // Send to server...
+  console.log('Submitted:', email, password);
+}
 
-  const submit = useCallback(async (values, onSubmit) => {
-    setIsSubmitting(true);
-    const e = validate(values);
-    if (Object.keys(e).length === 0) await onSubmit(values);
-    setIsSubmitting(false);
-  }, [validate]);
+export function LoginForm() {
+  const { pending } = useFormStatus();
 
-  return { status: { errors, touched, isSubmitting, isValid: Object.keys(errors).length === 0 }, setTouched, setErrors, validate, submit };
+  return (
+    <form action={submitForm}>
+      <input type="email" name="email" required />
+      <input type="password" name="password" required />
+      
+      <button type="submit" disabled={pending}>
+        {pending ? 'Submitting…' : 'Login'}
+      </button>
+    </form>
+  );
 }
 ```
 
+**Note:** `useFormStatus` tracks the parent `<form>` element's submission state. It only works with form actions (Server Actions in Next.js or similar frameworks).
+
 ## Examples of usage
 ```jsx
-const { status, setTouched, validate, submit } = useFormStatus({ initialValues, validateFn });
+import { useFormStatus } from 'react-dom';
 
-<input name="email" onBlur={() => setTouched(t => ({ ...t, email: true }))} />
-<button onClick={() => submit(values, handleSubmit)} disabled={status.isSubmitting}>Send</button>
+// Server Action (typically in a server-side file)
+async function handleLogin(formData) {
+  const email = formData.get('email');
+  const password = formData.get('password');
+  
+  try {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    console.log('Success:', data);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Client Component
+export function LoginForm() {
+  const { pending } = useFormStatus();
+
+  return (
+    <form action={handleLogin}>
+      <div>
+        <label htmlFor="email">Email:</label>
+        <input 
+          type="email"
+          id="email"
+          name="email" 
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password">Password:</label>
+        <input 
+          type="password"
+          id="password"
+          name="password" 
+          required
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        disabled={pending}
+      >
+        {pending ? 'Submitting…' : 'Login'}
+      </button>
+    </form>
+  );
+}
 ```
 
 ## Rules & best practices
-- Keep validation logic separate (validators or library like Yup).  
-- Keep `useFormStatus` focused on UI status — don't mix large domain logic into it.  
-- Debounce expensive validations.  
-- Prefer controlled inputs or use libraries (Formik, React Hook Form) for advanced needs.
+- Use `useFormStatus` only inside a `<form>` element with an `action` prop.
+- Works best with React 19+ and frameworks that support Server Actions (Next.js, etc.).
+- The `pending` state will automatically update when form submission starts/completes.
+- Combine with client-side validation libraries (Zod, Yup) for better UX.
+- For complex forms, pair with `useActionState` hook for handling action results and errors.
 
-## When to implement vs use a library
-- Implement a small `useFormStatus` for simple forms and consistent UI states.  
-- Use React Hook Form or Formik for complex forms, performance optimizations, and edge cases.
+## Requirements & browser support
+- **React 19+** with `react-dom`
+- Requires a parent `<form>` element with an `action` attribute
+- Works with Server Actions or custom form handlers
+- Modern browsers with ES6+ support
 
 ---
 
