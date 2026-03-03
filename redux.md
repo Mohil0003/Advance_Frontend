@@ -114,4 +114,3 @@ Drop these files into the matching paths and run your app. The example is intent
 
 ---
 
-Tell me if you want me to add these example files to the repo now, or to include `createAsyncThunk` or RTK Query examples.
