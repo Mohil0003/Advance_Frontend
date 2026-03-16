@@ -130,30 +130,28 @@ export const Counter = () => {
   const [count, setCount] = useState(0);
   return (
     <div>
-      <p data-testid="count-display">Count: {count}</p>
-      <button onClick={() => setCount(prev => prev + 1)}>Increment</button>
+      <h1>Current Count: {count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
     </div>
   );
 };
 
 // components/Counter.test.jsx
+
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { Counter } from './Counter';
 
-describe('Counter Component', () => {
-  it('should correctly handle rendering the initial component state', () => {
-    render(<Counter />);
-    expect(screen.getByTestId('count-display')).toHaveTextContent('Count: 0');
-  });
+test('renders the correct initial text', () => {
+  render(<Counter />);
+  expect(screen.getByText(/Current Count: 0/i)).toBeInTheDocument();
+});
 
-  it('should increment the count upon handling user click events', () => {
-    render(<Counter />);
-    
-    const incrementBtn = screen.getByRole('button', { name: /increment/i });
-    fireEvent.click(incrementBtn);
-    
-    expect(screen.getByTestId('count-display')).toHaveTextContent('Count: 1');
-  });
+test('button click increments the value', () => {
+  render(<Counter />);
+  const button = screen.getByText(/Increment/i);
+  fireEvent.click(button);
+  expect(screen.getByText(/Current Count: 1/i)).toBeInTheDocument();
 });
 ```
 **Explanation:** We effectively use `render` to mount our encapsulated component and `screen` queries to locate text nodes / interactive elements. User interaction handling is simulated securely using `fireEvent.click()`, verifying the resulting dynamic UI updates.
@@ -171,8 +169,7 @@ import { useState } from 'react';
 
 export const useToggle = (initialValue = false) => {
   const [value, setValue] = useState(initialValue);
-  const toggle = () => setValue(prev => !prev);
-  
+  const toggle = () => setValue((prev) => !prev);
   return [value, toggle];
 };
 
@@ -181,19 +178,18 @@ import { renderHook, act } from '@testing-library/react';
 import { useToggle } from './useToggle';
 
 describe('useToggle hook', () => {
-  it('should accurately use the provided initial state', () => {
+  test('should use initial value', () => {
     const { result } = renderHook(() => useToggle(true));
     expect(result.current[0]).toBe(true);
   });
 
-  it('should correctly mutate state changes using act', () => {
+  test('should toggle state', () => {
     const { result } = renderHook(() => useToggle(false));
     
-    // We must wrap async state setting updates in an `act` execution
     act(() => {
-      result.current[1](); // Invoke the encapsulated toggle state-setter function
+      result.current[1](); // Call the toggle function
     });
-    
+
     expect(result.current[0]).toBe(true);
   });
 });
