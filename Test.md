@@ -21,6 +21,8 @@ This configuration tells Babel to use the current Node.js version for environmen
 ### 2. `package.json` Configuration
 To properly execute React tests that require a DOM environment, you must specify `jsdom` as the test environment within your **package.json** configuration.
 
+"name":"your_project_name"
+
 ```json
 {
   "name": "materialui",
