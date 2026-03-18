@@ -2,18 +2,9 @@
 
 Automated testing is a crucial practice in modern software development. It ensures that our application behaves as expected, prevents regressions when new features are added, and provides documentation for how components and functions should behave. By implementing a robust testing strategy, we can confidently refactor code and maintain a high-quality codebase.
 
-## 1. Installation
-
-To set up the testing environment using **Jest** and **React Testing Library**, run the following commands line-by-line in your terminal:
-
-```bash
-npm install --save-dev jest
-npm install --save-dev jest-environment-jsdom
-npm install --save-dev babel-jest
-npm install --save-dev @testing-library/react
 ```
 
-## 2. Configuration
+## 1. Configuration
 
 ### `babel.config.cjs` Setup
 Jest requires Babel to transpile modern JavaScript (ESNext) and React (JSX) code into a format that Node.js can execute.
@@ -28,7 +19,7 @@ module.exports = {
 ```
 This configuration tells Babel to use the current Node.js version for environment targeting and the automatic React runtime, which removes the need to manually import React in every test file.
 
-### `package.json` Configuration
+### 2. `package.json` Configuration
 To properly execute React tests that require a DOM environment, you must specify `jsdom` as the test environment within your **package.json** configuration.
 
 ```json
