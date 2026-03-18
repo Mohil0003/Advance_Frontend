@@ -3,8 +3,7 @@
 Automated testing is a crucial practice in modern software development. It ensures that our application behaves as expected, prevents regressions when new features are added, and provides documentation for how components and functions should behave. By implementing a robust testing strategy, we can confidently refactor code and maintain a high-quality codebase.
 
 ```
-
-## 1. Configuration
+### 1. Configuration
 
 ### `babel.config.cjs` Setup
 Jest requires Babel to transpile modern JavaScript (ESNext) and React (JSX) code into a format that Node.js can execute.
